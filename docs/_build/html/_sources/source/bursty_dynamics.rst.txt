@@ -1,8 +1,0 @@
-bursty_dynamics package
-========================
-
-
-Module contents
----------------
-This section provides an overview of the main `bursty_dynamics` package and its contents.
-

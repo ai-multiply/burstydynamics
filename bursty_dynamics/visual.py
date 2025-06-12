@@ -115,7 +115,7 @@ def histogram(df, hist=True, set_axis=False, hue=None, **kwargs):
         color = hist_options[hist]
         fig = plt.figure()
         plot = sns.histplot(data=df, x=hist, kde=True, hue=hue, palette=palette, color = color, **kwargs)
-        sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
+        # sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
         if set_axis:
             plt.xlim(-1, 1)
         plt.close(fig)
@@ -275,7 +275,8 @@ def train_duration(train_info_df, x_limit=5, hue=None,**kwargs):
         palette = None
         
     sns.histplot(data=train_info_df, x="train_duration_yrs", kde=True, 
-                 bins=round(train_info_df['train_duration_yrs'].max()*2), hue=hue, palette=palette, color = 'darkblue', **kwargs)
+                 bins=round(train_info_df['train_duration_yrs'].max()*2), hue=hue, palette=palette, color = 'darkblue',
+                 stat="density", **kwargs)
     ax.set_xlabel('Train duration (years)', fontsize=14)
     ax.set_ylabel('Density', fontsize=14) 
     ax.tick_params(axis='both', which='major', labelsize=14)
@@ -327,7 +328,13 @@ def event_counts(train_info_df, x_limit=30, hue=None, **kwargs):
         print("No rows with train_id = 0 found. Proceeding with all data.")
 
     print(f"Filtering data to include 'unique_event_counts' ≤ {x_limit} (default value for x_limit is 30).")
-    filtered_data = train_info_df[(train_info_df["train_id"] != 0) & (train_info_df["unique_event_counts"] <= x_limit)]
+    filtered_data = train_info_df[(train_info_df["train_id"] != 0) & (train_info_df["unique_event_counts"] <= x_limit)].copy()
+
+    # Convert 'unique_event_counts' to categorical for correct alignment
+    filtered_data["unique_event_counts"] = filtered_data["unique_event_counts"].astype("category")
+
+    # Define the explicit order of categories
+    order = sorted(filtered_data["unique_event_counts"].unique())
 
     fig, ax = plt.subplots(figsize=(8, 5))
     
@@ -337,15 +344,16 @@ def event_counts(train_info_df, x_limit=30, hue=None, **kwargs):
         palette = None
         
     sns.countplot(data=filtered_data, 
-                  x="unique_event_counts", hue=hue, palette=palette, ax=ax, **kwargs)
+                  x="unique_event_counts", hue=hue, palette=palette, ax=ax, order=order, **kwargs)
 
     # Set axis labels
     ax.set_xlabel('Number of Unique Events per Train', fontsize=14)
     ax.set_ylabel('Number of Trains', fontsize=14)
-    # Adjust tick parameters
-    ax.tick_params(axis='both', which='major', labelsize=14)
+    
+    # Manually set x-ticks to match category values
+    ax.set_xticks(range(len(order)))  
+    ax.set_xticklabels(order, ha='center', fontsize=12)  # Center-align labels with bars
 
-    plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
     plt.tight_layout()
     plt.close(fig)  # Prevents the plot from displaying in interactive environments
     

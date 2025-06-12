@@ -6,6 +6,12 @@ from scipy.stats import pearsonr
 
 def remove_duplicate_events(df, subject_id, time_col):
     """
+    Removes duplicate events from the DataFrame based on subject ID and timestamp
+    This function identifies and removes rows where a subject has multiple events 
+    recorded at the exact same timestamp. It retains only the first occurrence of 
+    each (subject ID, timestamp) pair. The resulting DataFrame is also sorted 
+    by subject ID and timestamp in ascending order.
+    
     Parameters:
     train_df (DataFrame): DataFrame containing train information.
     subject_id (str): Name of the column containing subject IDs.

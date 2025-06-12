@@ -82,25 +82,40 @@ def train_detection(df, subject_id, time_col, max_iet, time_unit='days', min_bur
     return train_df
 
 
-def train_info(train_df, subject_id, time_col, summary_statistic=None):
+def train_info(train_df, subject_id, time_col, summary_statistic=False):
     """
     Calculate summary statistics for train data.
-
+    This function processes event data grouped by subject and train ID, calculating key metrics such as 
+    event counts, total terms, train start and end times, train durations, 
+    and total trains per subject. Optionally, it prints descriptive statistics 
+    about the dataset.
+    
     Parameters
     ----------
-    train_df : DataFrame
-        DataFrame containing train information.
+    train_df : pd.DataFrame
+        DataFrame containing the train data, including subject IDs, train IDs, and 
+        event timestamps.
     subject_id : str
         Name of the column containing subject IDs.
     time_col : str
-        Name of the column containing timestamps.
+        Name of the column containing timestamps (e.g., 'event_time').
     summary_statistic : bool, optional
-        Whether to print summary statistics. Default is False.
+        If True, prints summary statistics of train durations and event counts. 
+        Default is False.
 
     Returns
     -------
-    DataFrame
-        DataFrame with calculated train information.
+    pd.DataFrame
+        A DataFrame containing aggregated train-level information with the following columns:
+
+        - subject_id (str): Unique identifier for each subject.
+        - train_id (int): Identifier for each train sequence (group of events).
+        - unique_event_counts (int): Number of distinct event dates after removing duplicate events on the same day.
+        - total_term_counts (int): Total number of events including duplicates (e.g., multiple events on the same date).
+        - train_start (datetime): Earliest event timestamp for the train.
+        - train_end (datetime): Latest event timestamp for the train.
+        - train_duration_yrs (float): Duration of the train in years, rounded to two decimal places.
+        - total_trains (int): Total number of non-zero trains for each subject.
         
     Examples
     --------
@@ -165,25 +180,25 @@ def train_scores(train_df, subject_id, time_col, min_event_n=None, scatter=False
     time_col : str
         Name of the column containing the date.
     min_event_n : int, optional
-        Minimum number of events required in a train for it to be included in the dataset. Defaults to None.
+        Minimum number of unique (non-time duplicate) events required in a train for it to be included in the dataset. If None (default), no filtering is applied.
     scatter : bool, optional
         Whether to plot scatter plot. Defaults to False.
-    hist : str or None, optional
-        Type of histogram to plot. Options:
-        - True: Plot histograms for both BP and MC.
-        - "BP": Plot histogram for BP only.
-        - "MC": Plot histogram for MC only.
-        - "Both": Plot histograms for both BP and MC on the same plot.
-        - False: Do not plot any histograms. Defaults to False.
+    hist : bool or str, optional
+        Type of histogram to plot. Options:\n
+        - True: Plot histograms for both BP and MC.\n
+        - "BP": Plot histogram for BP only.\n
+        - "MC": Plot histogram for MC only.\n
+        - "Both": Plot histograms for both BP and MC on the same plot.\n
+        - False: Do not plot any histograms (default).
         
     Returns
     -------
     tuple or DataFrame
-        If both scatter and hist are True: returns (merged_df, scatter_plot, hist_plot).
-        If only scatter is True: returns (merged_df, scatter_plot).
-        If only hist is True: returns (merged_df, hist_plot).
-        If neither scatter nor hist is True: returns merged_df. 
-        
+        - If both scatter and hist are True: returns `(merged_df, scatter_plot, hist_plot)`.
+        - If only scatter is True: returns `(merged_df, scatter_plot)`.
+        - If only hist is True: returns `(merged_df, hist_plot)`.
+        - If neither scatter nor hist is True: returns `merged_df`.
+            
     Notes
     -----
     - `merged_df` : DataFrame
@@ -208,13 +223,12 @@ def train_scores(train_df, subject_id, time_col, min_event_n=None, scatter=False
     if time_col not in train_df.columns:
         print(f"Error: '{time_col}' column not found in the DataFrame.")
         return
-    
+
+    # Convert time_col to datetime
     try:
-        # Convert time_col to datetime
         train_df[time_col] = pd.to_datetime(train_df[time_col])
     except Exception as e:
-        print(f"Error converting '{time_col}' to datetime: {e}")
-        return
+        raise ValueError(f"Error converting '{time_col}' to datetime: {e}")
 
     # Remove duplicate events for each subject on the same day
     train_df_updated = remove_duplicate_events(train_df, subject_id, time_col)

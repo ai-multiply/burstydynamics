@@ -2,7 +2,7 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-
+import sphinx_rtd_theme
 import os,sys
 sys.path.insert(0, os.path.abspath('..'))  # Adjust the path as necessary
 sys.path.insert(0, os.path.abspath('../bursty_dynamics'))
@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath('../bursty_dynamics'))
 project = 'Bursty Dynamics'
 copyright = '2024, AI-Multiply'
 author = 'Alisha Angdembe'
-release = '0.0.5'
+release = '0.0.6'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -24,7 +24,7 @@ extensions = ['sphinx.ext.autodoc',
 
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**/.ipynb_checkpoints']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**/.ipynb_checkpoints', '.ipynb_checkpoints']
 
 language = 'English'
 
@@ -33,8 +33,6 @@ language = 'English'
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
-html_css_files = [
-    'custom.css',
-]
 
-
+# Remove the custom CSS since it's empty
+# html_css_files = ['custom.css']
