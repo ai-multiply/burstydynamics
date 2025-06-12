@@ -6,16 +6,15 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>bursty_dynamics.trains &mdash; Bursty Dynamics 0.0.5 documentation</title>
+  <title>bursty_dynamics.trains &mdash; Bursty Dynamics 0.0.6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
-      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=850f2a5e"></script>
+      <script src="../_static/documentation_options.js?v=ffb991b1"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/design-tabs.js?v=f930bc37"></script>
@@ -143,25 +142,41 @@ Default is 'days'.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="bursty_dynamics.trains.train_info">
-<span class="sig-prename descclassname"><span class="pre">bursty_dynamics.trains.</span></span><span class="sig-name descname"><span class="pre">train_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_statistic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bursty_dynamics.trains.train_info" title="Link to this definition"></a></dt>
-<dd><p>Calculate summary statistics for train data.</p>
+<span class="sig-prename descclassname"><span class="pre">bursty_dynamics.trains.</span></span><span class="sig-name descname"><span class="pre">train_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_statistic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bursty_dynamics.trains.train_info" title="Link to this definition"></a></dt>
+<dd><p>Calculate summary statistics for train data.
+This function processes event data grouped by subject and train ID, calculating key metrics such as 
+event counts, total terms, train start and end times, train durations, 
+and total trains per subject. Optionally, it prints descriptive statistics 
+about the dataset.</p>
 <section id="id1">
 <h2>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <dl class="simple">
-<dt>train_df<span class="classifier">DataFrame</span></dt><dd><p>DataFrame containing train information.</p>
+<dt>train_df<span class="classifier">pd.DataFrame</span></dt><dd><p>DataFrame containing the train data, including subject IDs, train IDs, and 
+event timestamps.</p>
 </dd>
 <dt>subject_id<span class="classifier">str</span></dt><dd><p>Name of the column containing subject IDs.</p>
 </dd>
-<dt>time_col<span class="classifier">str</span></dt><dd><p>Name of the column containing timestamps.</p>
+<dt>time_col<span class="classifier">str</span></dt><dd><p>Name of the column containing timestamps (e.g., 'event_time').</p>
 </dd>
-<dt>summary_statistic<span class="classifier">bool, optional</span></dt><dd><p>Whether to print summary statistics. Default is False.</p>
+<dt>summary_statistic<span class="classifier">bool, optional</span></dt><dd><p>If True, prints summary statistics of train durations and event counts. 
+Default is False.</p>
 </dd>
 </dl>
 </section>
 <section id="id2">
 <h2>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
 <dl class="simple">
-<dt>DataFrame</dt><dd><p>DataFrame with calculated train information.</p>
+<dt>pd.DataFrame</dt><dd><p>A DataFrame containing aggregated train-level information with the following columns:</p>
+<ul class="simple">
+<li><p>subject_id (str): Unique identifier for each subject.</p></li>
+<li><p>train_id (int): Identifier for each train sequence (group of events).</p></li>
+<li><p>unique_event_counts (int): Number of distinct event dates after removing duplicate events on the same day.</p></li>
+<li><p>total_term_counts (int): Total number of events including duplicates (e.g., multiple events on the same date).</p></li>
+<li><p>train_start (datetime): Earliest event timestamp for the train.</p></li>
+<li><p>train_end (datetime): Latest event timestamp for the train.</p></li>
+<li><p>train_duration_yrs (float): Duration of the train in years, rounded to two decimal places.</p></li>
+<li><p>total_trains (int): Total number of non-zero trains for each subject.</p></li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -189,26 +204,30 @@ Default is 'days'.</p>
 </dd>
 <dt>time_col<span class="classifier">str</span></dt><dd><p>Name of the column containing the date.</p>
 </dd>
-<dt>min_event_n<span class="classifier">int, optional</span></dt><dd><p>Minimum number of events required in a train for it to be included in the dataset. Defaults to None.</p>
+<dt>min_event_n<span class="classifier">int, optional</span></dt><dd><p>Minimum number of unique (non-time duplicate) events required in a train for it to be included in the dataset. If None (default), no filtering is applied.</p>
 </dd>
 <dt>scatter<span class="classifier">bool, optional</span></dt><dd><p>Whether to plot scatter plot. Defaults to False.</p>
 </dd>
-<dt>hist<span class="classifier">str or None, optional</span></dt><dd><p>Type of histogram to plot. Options:
-- True: Plot histograms for both BP and MC.
-- &quot;BP&quot;: Plot histogram for BP only.
-- &quot;MC&quot;: Plot histogram for MC only.
-- &quot;Both&quot;: Plot histograms for both BP and MC on the same plot.
-- False: Do not plot any histograms. Defaults to False.</p>
+<dt>hist<span class="classifier">bool or str, optional</span></dt><dd><p>Type of histogram to plot. Options:</p>
+<ul class="simple">
+<li><p>True: Plot histograms for both BP and MC.</p></li>
+<li><p>&quot;BP&quot;: Plot histogram for BP only.</p></li>
+<li><p>&quot;MC&quot;: Plot histogram for MC only.</p></li>
+<li><p>&quot;Both&quot;: Plot histograms for both BP and MC on the same plot.</p></li>
+<li><p>False: Do not plot any histograms (default).</p></li>
+</ul>
 </dd>
 </dl>
 </section>
 <section id="id5">
 <h2>Returns<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
 <dl class="simple">
-<dt>tuple or DataFrame</dt><dd><p>If both scatter and hist are True: returns (merged_df, scatter_plot, hist_plot).
-If only scatter is True: returns (merged_df, scatter_plot).
-If only hist is True: returns (merged_df, hist_plot).
-If neither scatter nor hist is True: returns merged_df.</p>
+<dt>tuple or DataFrame</dt><dd><ul class="simple">
+<li><p>If both scatter and hist are True: returns <cite>(merged_df, scatter_plot, hist_plot)</cite>.</p></li>
+<li><p>If only scatter is True: returns <cite>(merged_df, scatter_plot)</cite>.</p></li>
+<li><p>If only hist is True: returns <cite>(merged_df, hist_plot)</cite>.</p></li>
+<li><p>If neither scatter nor hist is True: returns <cite>merged_df</cite>.</p></li>
+</ul>
 </dd>
 </dl>
 </section>
